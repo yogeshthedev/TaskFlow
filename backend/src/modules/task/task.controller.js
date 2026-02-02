@@ -5,6 +5,7 @@ import {
   getSingleTask,
   getTasks,
   updateTask,
+  uploadTaskAttachment,
 } from "./task.service.js";
 import ApiResponse from "../../utils/apiResponse.js";
 
@@ -80,12 +81,38 @@ export const deleteTaskController = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, deleteTask, "Task deleted successfully"));
 });
 
-export const  updateTaskController = asyncHandler(async(req,res)=>{
-    const { taskId } = req.params;
+export const updateTaskController = asyncHandler(async (req, res) => {
+  const { taskId } = req.params;
+  const updates = req.body;
 
-    const updateTask = updateTask({taskId})
+  const updateTask = updateTask({ taskId, updates });
 
-     return res
+  return res
     .status(200)
     .json(new ApiResponse(200, updateTask, "Task updated successfully"));
-})
+});
+
+export const uploadTaskAttachmentController = asyncHandler(async (req, res) => {
+  const { taskId } = req.params;
+
+  const userId = req.user._id;
+  const role = req.user.role;
+
+
+  if (!req.files || req.files.length === 0) {
+    throw new ApiError(400, "At least one file is required");
+  }
+
+  const updatedTask = await uploadTaskAttachment({
+    taskId,
+    userId,
+    role,
+    files: req.files, // 🔥 send array
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, updatedTask, "Attachments uploaded successfully"),
+    );
+});

@@ -1,3 +1,4 @@
+import { uploadFile } from "../../config/imagekit.js";
 import { Task } from "../../models/task.model.js";
 import ApiError from "../../utils/apiError.js";
 
@@ -99,12 +100,62 @@ export const deleteTask = async ({ taskId }) => {
   return task;
 };
 
-export const updateTask = async ({ taskId }) => {
+export const updateTask = async ({ taskId, updates }) => {
+  const allowedFields = ["title", "description", "assignedTo"];
+
+  const updateData = {};
+
+  for (let key in updates) {
+    if (allowedFields.includes(key)) {
+      updateData[key] = updates[key];
+    }
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    throw new ApiError(400, "No valid fields provided for update");
+  }
+
+  const task = await Task.findByIdAndUpdate(taskId, updateData, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!task) {
+    throw new ApiError(404, "Task not found");
+  }
+
+  return task;
+};
+
+export const uploadTaskAttachment = async ({ taskId, userId, role, files }) => {
+  // 1️⃣ Find task
   const task = await Task.findById(taskId);
 
   if (!task) {
     throw new ApiError(404, "Task not found");
   }
+
+  // 2️⃣ Ownership rule
+  if (role === "user") {
+    if (task.assignedTo.toString() !== userId.toString()) {
+      throw new ApiError(403, "Forbidden: You cannot upload to this task");
+    }
+  }
+
+  // 3️⃣ Upload each file to ImageKit
+  for (const file of files) {
+    const uploaded = await uploadFile(file.buffer, file.originalname);
+
+    // Push attachment metadata into task
+    task.attachments.push({
+      filename: file.originalname,
+      url: uploaded.url,
+      createdBy: userId,
+    });
+  }
+
+  // 4️⃣ Save updated task
+  await task.save();
 
   return task;
 };

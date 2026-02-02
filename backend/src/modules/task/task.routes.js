@@ -44,10 +44,12 @@ router.delete(
   deleteTaskController,
 );
 
-// router.post(
-//   "/:taskId/attachments",
-//   authMiddleware,
-//   uploadTaskAttachmentController,
-// );
+router.post(
+  "/:taskId/attachments",
+  authMiddleware,
+  upload.array("files", 5),
+
+  uploadTaskAttachmentController,
+);
 
 export default router;
