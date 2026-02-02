@@ -4,6 +4,7 @@ import {
   createTask,
   getSingleTask,
   getTasks,
+  updateTask,
 } from "./task.service.js";
 import ApiResponse from "../../utils/apiResponse.js";
 
@@ -78,3 +79,13 @@ export const deleteTaskController = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, deleteTask, "Task deleted successfully"));
 });
+
+export const  updateTaskController = asyncHandler(async(req,res)=>{
+    const { taskId } = req.params;
+
+    const updateTask = updateTask({taskId})
+
+     return res
+    .status(200)
+    .json(new ApiResponse(200, updateTask, "Task updated successfully"));
+})

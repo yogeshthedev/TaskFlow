@@ -98,3 +98,13 @@ export const deleteTask = async ({ taskId }) => {
 
   return task;
 };
+
+export const updateTask = async ({ taskId }) => {
+  const task = await Task.findById(taskId);
+
+  if (!task) {
+    throw new ApiError(404, "Task not found");
+  }
+
+  return task;
+};

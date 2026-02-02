@@ -8,6 +8,7 @@ import {
   deleteTaskController,
   getSingleTaskController,
   getTasksController,
+  updateTaskController,
 } from "./task.controller.js";
 import validate from "../../middlewares/validate.middleware.js";
 import { createTaskValidation } from "./task.validation.js";
@@ -27,12 +28,12 @@ router.get("/", authMiddleware, getTasksController);
 
 router.get("/:taskId", authMiddleware, getSingleTaskController);
 
-// router.patch(
-//   "/:taskId",
-//   authMiddleware,
-//   roleMiddleware("admin"),
-//   updateTaskController,
-// );
+router.patch(
+  "/:taskId",
+  authMiddleware,
+  roleMiddleware("admin"),
+  updateTaskController,
+);
 
 router.patch("/:taskId/status", authMiddleware, updateTaskStatusController);
 
