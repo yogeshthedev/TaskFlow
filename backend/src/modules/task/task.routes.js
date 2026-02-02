@@ -5,6 +5,7 @@ import { roleMiddleware } from "../../middlewares/role.middleware.js";
 
 import {
   createTaskController,
+  deleteTaskController,
   getSingleTaskController,
   getTasksController,
 } from "./task.controller.js";
@@ -35,12 +36,12 @@ router.get("/:taskId", authMiddleware, getSingleTaskController);
 
 router.patch("/:taskId/status", authMiddleware, updateTaskStatusController);
 
-// router.delete(
-//   "/:taskId",
-//   authMiddleware,
-//   roleMiddleware("admin"),
-//   deleteTaskController,
-// );
+router.delete(
+  "/:taskId",
+  authMiddleware,
+  roleMiddleware("admin"),
+  deleteTaskController,
+);
 
 // router.post(
 //   "/:taskId/attachments",

@@ -1,5 +1,10 @@
 import asyncHandler from "../../utils/asyncHandler.js";
-import { changeTaskStatus, createTask, getSingleTask, getTasks } from "./task.service.js";
+import {
+  changeTaskStatus,
+  createTask,
+  getSingleTask,
+  getTasks,
+} from "./task.service.js";
 import ApiResponse from "../../utils/apiResponse.js";
 
 export const createTaskController = asyncHandler(async (req, res) => {
@@ -55,12 +60,21 @@ export const updateTaskStatusController = asyncHandler(async (req, res) => {
   const role = req.user.role;
   const { taskId } = req.params;
 
-   const { status } = req.body; 
+  const { status } = req.body;
 
-  const task = await changeTaskStatus({taskId,userId,role,status})
+  const task = await changeTaskStatus({ taskId, userId, role, status });
 
-    return res
+  return res
     .status(200)
     .json(new ApiResponse(200, task, "Task status changed successfully"));
+});
 
+export const deleteTaskController = asyncHandler(async (req, res) => {
+  const { taskId } = req.params;
+
+  const deleteTask = await deleteTask({ taskId });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, deleteTask, "Task deleted successfully"));
 });

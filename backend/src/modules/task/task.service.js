@@ -64,9 +64,6 @@ export const getSingleTask = async ({ taskId, userId, role }) => {
   return task;
 };
 
-import { Task } from "../../models/task.model.js";
-import ApiError from "../../utils/apiError.js";
-
 export const changeTaskStatus = async ({ taskId, userId, role, status }) => {
   const task = await Task.findById(taskId);
 
@@ -88,6 +85,16 @@ export const changeTaskStatus = async ({ taskId, userId, role, status }) => {
 
   task.status = status;
   await task.save();
+
+  return task;
+};
+
+export const deleteTask = async ({ taskId }) => {
+  const task = await Task.findByIdAndDelete(taskId);
+
+  if (!task) {
+    throw new ApiError(404, "Task not found");
+  }
 
   return task;
 };
