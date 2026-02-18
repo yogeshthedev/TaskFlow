@@ -2,6 +2,7 @@ import asyncHandler from "../../utils/asyncHandler.js";
 import {
   changeTaskStatus,
   createTask,
+  deleteTaskAttachment,
   getSingleTask,
   getTasks,
   updateTask,
@@ -71,6 +72,10 @@ export const updateTaskStatusController = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, task, "Task status changed successfully"));
 });
 
+
+
+
+
 export const deleteTaskController = asyncHandler(async (req, res) => {
   const { taskId } = req.params;
 
@@ -98,7 +103,6 @@ export const uploadTaskAttachmentController = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   const role = req.user.role;
 
-
   if (!req.files || req.files.length === 0) {
     throw new ApiError(400, "At least one file is required");
   }
@@ -115,4 +119,22 @@ export const uploadTaskAttachmentController = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(200, updatedTask, "Attachments uploaded successfully"),
     );
+});
+
+export const deleteTaskAttachmentController = asyncHandler(async (req, res) => {
+  const { taskId, attachmentId } = req.params;
+
+  const userId = req.user._id;
+  const role = req.user.role;
+
+  const task = await deleteTaskAttachment({
+    taskId,
+    attachmentId,
+    userId,
+    role,
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, task, "Attachment deleted successfully"));
 });

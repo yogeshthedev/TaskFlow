@@ -42,6 +42,10 @@ export const TaskSchema = new mongoose.Schema(
           type: String,
           required: true,
         },
+         fileId: {
+          type:String,
+          required:true
+         }, 
         createdBy: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",

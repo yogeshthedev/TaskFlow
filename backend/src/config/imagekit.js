@@ -14,3 +14,7 @@ export async function uploadFile(file, filename) {
   });
   return response;
 }
+
+export async function deleteFile(fileId) {
+  await imagekit.deleteFile(fileId);
+}

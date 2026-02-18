@@ -1,4 +1,4 @@
-import { uploadFile } from "../../config/imagekit.js";
+import { deleteFile, uploadFile } from "../../config/imagekit.js";
 import { Task } from "../../models/task.model.js";
 import ApiError from "../../utils/apiError.js";
 
@@ -128,6 +128,39 @@ export const updateTask = async ({ taskId, updates }) => {
 };
 
 export const uploadTaskAttachment = async ({ taskId, userId, role, files }) => {
+  const task = await Task.findById(taskId);
+
+  if (!task) {
+    throw new ApiError(404, "Task not found");
+  }
+
+  if (role === "user") {
+    if (task.assignedTo.toString() !== userId.toString()) {
+      throw new ApiError(403, "Forbidden: You cannot upload to this task");
+    }
+  }
+
+  for (const file of files) {
+    const uploaded = await uploadFile(file.buffer, file.originalname);
+
+    task.attachments.push({
+      filename: file.originalname,
+      url: uploaded.url,
+      fileId: uploaded.fileId,
+      createdBy: userId,
+    });
+  }
+
+  await task.save();
+  return task;
+};
+
+export const deleteTaskAttachment = async ({
+  taskId,
+  attachmentId,
+  userId,
+  role,
+}) => {
   // 1️⃣ Find task
   const task = await Task.findById(taskId);
 
@@ -135,26 +168,30 @@ export const uploadTaskAttachment = async ({ taskId, userId, role, files }) => {
     throw new ApiError(404, "Task not found");
   }
 
-  // 2️⃣ Ownership rule
+  // 2️⃣ Find attachment
+  const attachment = task.attachments.id(attachmentId);
+
+  if (!attachment) {
+    throw new ApiError(404, "Attachment not found");
+  }
+
+  // 3️⃣ Permission check
   if (role === "user") {
-    if (task.assignedTo.toString() !== userId.toString()) {
-      throw new ApiError(403, "Forbidden: You cannot upload to this task");
+    if (attachment.createdBy.toString() !== userId.toString()) {
+      throw new ApiError(403, "Forbidden: You cannot delete this attachment");
     }
   }
 
-  // 3️⃣ Upload each file to ImageKit
-  for (const file of files) {
-    const uploaded = await uploadFile(file.buffer, file.originalname);
-
-    // Push attachment metadata into task
-    task.attachments.push({
-      filename: file.originalname,
-      url: uploaded.url,
-      createdBy: userId,
-    });
+  // 4️⃣ Delete from ImageKit (CRITICAL)
+  if (attachment.fileId) {
+    await deleteFile(attachment.fileId);
+  } else {
+    // Safety guard for old data
+    console.warn("Missing fileId for attachment:", attachment._id);
   }
 
-  // 4️⃣ Save updated task
+  // 5️⃣ Remove from MongoDB
+  attachment.deleteOne();
   await task.save();
 
   return task;
