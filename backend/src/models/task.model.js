@@ -61,4 +61,9 @@ export const TaskSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+TaskSchema.index({ status: 1 });
+TaskSchema.index({ assignedTo: 1 });
+TaskSchema.index({ createdAt: -1 });
+TaskSchema.index({ title: "text" });
+
 export const Task = mongoose.model("Task", TaskSchema);

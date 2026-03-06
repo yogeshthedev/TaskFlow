@@ -13,7 +13,7 @@ const router = Router();
 router.get(
   "/dashboard",
   authMiddleware,
-  roleMiddleware("admin"),
+  roleMiddleware("admin"),  
   adminDashboardController,
 );
 

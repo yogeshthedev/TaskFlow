@@ -22,30 +22,44 @@ export const createTask = async ({
   return task;
 };
 
-export const getTasks = async ({ userId, role, filters }) => {
-  let query = {};
+export const getTasks = async ({ userId, role, page, limit, status, search }) => {
+  const query = {};
 
-  // ✅ User can only see their own assigned tasks
+  // role based filter
   if (role === "user") {
     query.assignedTo = userId;
   }
 
-  // ✅ Admin can filter tasks (optional)
-  if (filters?.status) {
-    query.status = filters.status;
+  // status filter
+  if (status) {
+    query.status = status;
   }
 
-  if (filters?.search) {
-    query.title = { $regex: filters.search, $options: "i" };
+  // search filter
+  if (search) {
+    query.title = { $regex: search, $options: "i" };
   }
 
-  // Fetch tasks from DB
+  const skip = (page - 1) * limit;
+
   const tasks = await Task.find(query)
-    .populate("assignedTo", "name email role")
-    .populate("createdBy", "name email role")
-    .sort({ createdAt: -1 });
+    .populate("assignedTo", "name email")
+    .populate("createdBy", "name email")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
 
-  return tasks;
+  const totalTasks = await Task.countDocuments(query);
+
+  return {
+    tasks,
+    pagination: {
+      totalTasks,
+      currentPage: page,
+      limit,
+      totalPages: Math.ceil(totalTasks / limit),
+    },
+  };
 };
 
 export const getSingleTask = async ({ taskId, userId, role }) => {

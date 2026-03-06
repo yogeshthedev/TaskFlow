@@ -31,17 +31,24 @@ export const getTasksController = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   const role = req.user.role;
 
-  // Filters from query params
-  const filters = {
-    status: req.query.status,
-    search: req.query.search,
-  };
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
 
-  const tasks = await getTasks({ userId, role, filters });
+  const status = req.query.status;
+  const search = req.query.search;
+
+  const data = await getTasks({
+    userId,
+    role,
+    page,
+    limit,
+    status,
+    search,
+  });
 
   return res
     .status(200)
-    .json(new ApiResponse(200, tasks, "Tasks fetched successfully"));
+    .json(new ApiResponse(200, data, "Tasks fetched successfully"));
 });
 
 export const getSingleTaskController = asyncHandler(async (req, res) => {
